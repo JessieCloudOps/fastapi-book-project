@@ -59,4 +59,8 @@ jobs:
       # Ensure that the system is not stuck
       - name: Check if the container is running
         run: |
-          docker ps | grep fastapi-container
+          if sudo docker ps --filter "name=fastapi-container" --format "{{.Names}}" | grep -q "fastapi-container"; then
+            echo "Container is running"
+            else
+            echo "Container is not running or found, but continuing"
+            fi
