@@ -44,14 +44,14 @@ jobs:
           port: 22
           script: |
             # Pull the latest Docker image from Docker Hub
-            docker pull jessiecloudops/fastapi-app:latest
+            sudo docker pull jessiecloudops/fastapi-app:latest
             
             # Stop and remove any previous containers
-            docker stop fastapi-container || true
-            docker rm fastapi-container || true
+            sudo docker stop fastapi-container || true
+            sudo docker rm fastapi-container || true
 
             # Run the new container
-            docker run -d --name fastapi-container -p 8000:8000 jessiecloudops/fastapi-app:latest
+            sudo docker run -d --name fastapi-container -p 8000:8000 jessiecloudops/fastapi-app:latest
             
             # Restart nginx service to apply any new configurations
             sudo systemctl restart nginx || true
