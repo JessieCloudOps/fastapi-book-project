@@ -1,7 +1,7 @@
 name: Deploy FastAPI App
 
 on:
-  pull_request:
+  push:
     branches:
       - main  # Trigger on push to the 'main' branch (includes PR merge)
 

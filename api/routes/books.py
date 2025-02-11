@@ -56,7 +56,7 @@ async def get_book_by_id(book_id: int) -> Book:
     """
     book = db.books.get(book_id)  # Fetch book from in-memory database
     if book is None:
-        raise HTTPException(status_code=404, detail=f"Book with ID {book_id} not found")
+        raise HTTPException(status_code=404, detail=f"Book not found")
     return book
 
 
