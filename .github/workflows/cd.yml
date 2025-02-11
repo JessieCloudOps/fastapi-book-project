@@ -53,14 +53,10 @@ jobs:
             # Run the new container
             sudo docker run -d --name fastapi-container -p 8000:8000 jessiecloudops/fastapi-app:latest
             
-            # Restart nginx service to apply any new configurations
-            sudo systemctl restart nginx || true
+        
 
       # Ensure that the system is not stuck
       - name: Check if the container is running
         run: |
-          if sudo docker ps --filter "name=fastapi-container" --format "{{.Names}}" | grep -q "fastapi-container"; then
-            echo "Container is running"
-            else
-            echo "Container is not running or found, but continuing"
-            fi
+         sudo docker ps | grep -q fastapi-container 
+           
