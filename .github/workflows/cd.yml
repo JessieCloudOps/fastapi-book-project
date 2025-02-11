@@ -1,31 +1,40 @@
-name: Deploy to GCP
+name: Deploy FastAPI App
 
 on:
   push:
     branches:
-      - main
+      - main  # Trigger on push to the 'main' branch (includes PR merge)
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
+      # Checkout the repository
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup SSH Key
+      # Build Docker image
+      - name: Build Docker image
         run: |
-          echo "$GCP_SSH_KEY" > private_key
-          chmod 600 private_key
+          docker build -t jessiecloudops/fastapi-app:latest .
 
-      - name: Deploy to GCP
+      # Push Docker image to Docker Hub
+      - name: Push Docker image to Docker Hub
         run: |
-          ssh -o StrictHostKeyChecking=no -i ${{ secrets.GCP_SSH_KEY }} ${{ secrets.GCP_USERNAME }}@${{ secrets.GCP_HOST }} << 'EOF'
-            cd YOUR_REPO
-            git pull origin main
+          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          docker push jessiecloudops/fastapi-app:latest
+
+      # SSH to GCP VM and deploy
+      - name: SSH to GCP VM and deploy
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.GCP_HOST }}
+          username: ${{ secrets.GCP_USERNAME }}
+          key: ${{ secrets.GCP_SSH_KEY }}
+          port: 22
+          script: |
+            docker pull jessiecloudops/fastapi-app:latest
             docker stop fastapi-container || true
             docker rm fastapi-container || true
-            docker build -t fastapi-app .
-            docker run -d --name fastapi-container -p 8000:8000 fastapi-app
+            docker run -d --name fastapi-container -p 8000:8000 jessiecloudops/fastapi-app:latest
             sudo systemctl restart nginx
-          EOF
