@@ -1,0 +1,31 @@
+name: Deploy to GCP
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup SSH Key
+        run: |
+          echo "$GCP_SSH_KEY" > private_key
+          chmod 600 private_key
+
+      - name: Deploy to GCP
+        run: |
+          ssh -o StrictHostKeyChecking=no -i private_key ${{ secrets.GCP_USERNAME }}@${{ secrets.GCP_HOST }} << 'EOF'
+            cd YOUR_REPO
+            git pull origin main
+            docker stop fastapi-container || true
+            docker rm fastapi-container || true
+            docker build -t fastapi-app .
+            docker run -d --name fastapi-container -p 8000:8000 fastapi-app
+            sudo systemctl restart nginx
+          EOF
