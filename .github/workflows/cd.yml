@@ -8,31 +8,21 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # Adjust the timeout to 30 minutes for deployment
-
     steps:
       # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Set up Docker Buildx (for cross-platform support if needed)
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      # Log in to Docker Hub
-      - name: Log in to Docker Hub
-        run: |
-          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-
       # Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t jessiecloudops/fastapi-app:latest .
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest .
 
       # Push Docker image to Docker Hub
       - name: Push Docker image to Docker Hub
         run: |
-          docker push jessiecloudops/fastapi-app:latest
+          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          docker push ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
 
       # SSH to GCP VM and deploy
       - name: SSH to GCP VM and deploy
@@ -43,20 +33,8 @@ jobs:
           key: ${{ secrets.GCP_SSH_KEY }}
           port: 22
           script: |
-            # Pull the latest Docker image from Docker Hub
-            sudo docker pull jessiecloudops/fastapi-app:latest
-            
-            # Stop and remove any previous containers
+            sudo docker pull ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
             sudo docker stop fastapi-container || true
             sudo docker rm fastapi-container || true
-
-            # Run the new container
-            sudo docker run -d --name fastapi-container -p 8000:8000 jessiecloudops/fastapi-app:latest
-            
-        
-
-      # Ensure that the system is not stuck
-      - name: Check if the container is running
-        run: |
-         sudo docker ps | grep -q fastapi-container 
-           
+            sudo docker run -d --name fastapi-container -p 8000:8000 ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
+            EOF
