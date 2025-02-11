@@ -18,14 +18,9 @@ jobs:
           echo "$GCP_SSH_KEY" > private_key
           chmod 600 private_key
 
-          - name: Debug SSH Connection
-          run: |
-            ssh -o StrictHostKeyChecking=no -i private_key username@35.193.88.239 "echo 'SSH connection successful!'"
-        
-
       - name: Deploy to GCP
         run: |
-          ssh -o StrictHostKeyChecking=no -i private_key ${{ secrets.GCP_USERNAME }}@${{ secrets.GCP_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.GCP_SSH_KEY }} ${{ secrets.GCP_USERNAME }}@${{ secrets.GCP_HOST }} << 'EOF'
             cd YOUR_REPO
             git pull origin main
             docker stop fastapi-container || true
