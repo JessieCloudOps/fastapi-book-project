@@ -37,4 +37,4 @@ jobs:
             sudo docker stop fastapi-container || true
             sudo docker rm fastapi-container || true
             sudo docker run -d --name fastapi-container -p 8000:8000 ${{ secrets.DOCKER_USERNAME }}/fastapi-app:latest
-            EOF
+        
